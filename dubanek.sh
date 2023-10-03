@@ -10,7 +10,7 @@ SEND_MESSAGE_URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
 CHAT_ID="-1001770053832"
 
 # API ключ
-API_KEY="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"
+API_KEY=""
 
 # Текст, который вы хотите передать в качестве запроса
 REQUEST_TEXT="Расскажи утренний анекдот на случайную тему"
@@ -75,7 +75,7 @@ while true; do
   # Проверяем, является ли текущее время 11:00
   if [[ "$CURRENT_DATE" != "$PREVIOUS_DATA" && "$CURRENT_TIME" > "$COMPARISON_TIME" ]]; then
     # Отправка запроса с использованием curl
-    REQUEST_TEXT="Очень короткий анекдот на случайную тему"
+    REQUEST_TEXT="Очень короткий анекдот на случайную тему на 10 слов"
     RESPONSE=$(curl -s -X POST "$API_URL" \
          -H "Authorization: Bearer $API_KEY" \
          -H "Content-Type: application/json" \
@@ -83,7 +83,7 @@ while true; do
            "model": "gpt-3.5-turbo",
 	   "temperature": 0.9,
 	   "messages": [{"role": "user", "content": "'"$REQUEST_TEXT"'"}],
-           "max_tokens": 30
+           "max_tokens": 35
          }')
 
     echo $RESPONSE
