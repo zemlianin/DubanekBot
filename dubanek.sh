@@ -10,7 +10,7 @@ SEND_MESSAGE_URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
 CHAT_ID="-1001770053832"
 
 # API ключ
-API_KEY=""
+API_KEY="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"
 
 # Текст, который вы хотите передать в качестве запроса
 REQUEST_TEXT="Расскажи утренний анекдот на случайную тему"
@@ -50,7 +50,7 @@ handle_new_members() {
   if [[ "$PREVIOUS_MEMBERS_COUNT" != "0" && "$current_members_count" > "$PREVIOUS_MEMBERS_COUNT" ]]; then
     local new_members_count=$((current_members_count - PREVIOUS_MEMBERS_COUNT))
     local message="Привет! Расскажи свой любимый анекдот)"
-###    send_message "$message"
+    send_message "$message"
     echo "new member"
     PREVIOUS_MEMBERS_COUNT="$current_members_count"
   fi
@@ -60,7 +60,7 @@ handle_new_members() {
 send_morning_joke() {
   local generated_text="$1"
   local morning_joke="Утренний анекдот от AI: $generated_text"
-###  send_message "$morning_joke"
+  send_message "$morning_joke"
 }
 
 # Основной цикл для получения обновлений чата
