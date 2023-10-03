@@ -1,16 +1,15 @@
 #!/bin/bash
 
-# Установите токен вашего бота
-BOT_TOKEN="6427718017:j_iG7b1FiHTzjpwAu-k9xKhMXXX"
+# BOT_TOKEN устонавливается внутри CI
 
 # Задайте URL для отправки сообщений в чат
 SEND_MESSAGE_URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
 
 # ID вашего чата, куда бот будет отправлять сообщения
-CHAT_ID="-1001770053832"
+# CHAT_ID устонавливается внутри CI
 
 # API ключ
-API_KEY=""
+# API_KEY устонавливается внутри CI
 
 # Текст, который вы хотите передать в качестве запроса
 REQUEST_TEXT="Расскажи утренний анекдот на случайную тему"
