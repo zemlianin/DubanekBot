@@ -1,0 +1,31 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: executing remote ssh commands to deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.SSH_KEY }}
+          script: |
+            cd DubanekBot
+            BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+
+            # ID вашего чата, куда бот будет отправлять сообщения
+            CHAT_ID=${{ secrets.CHAT_ID }}
+
+            # API ключ
+            API_KEY=${{ secrets.API_KEY }}
+            
+            kill $(cat dubanek_pid.txt) 
+            git pull
+            ./dubanek.sh &
+            echo $! > dubanek_pid.txt
