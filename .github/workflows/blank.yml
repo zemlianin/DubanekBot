@@ -24,14 +24,15 @@ jobs:
 
             # API ключ
             API_KEY="${{ secrets.API_KEY }}"
-
+            
             echo $BOT_TOKEN >> log.txt
             echo $CHAT_ID >> log.txt
             echo $API_KEY >> log.txt
             
             kill $(cat dubanek_pid.txt) 
             git pull
-            ./dubanek.sh &
+            chmod +x dubanek.sh
+            nohup ./dubanek.sh > /dev/null 2>&1 &
             echo $! > dubanek_pid.txt
             disown
             exit 0
