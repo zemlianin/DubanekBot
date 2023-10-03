@@ -19,15 +19,19 @@ jobs:
             cd DubanekBot
             BOT_TOKEN="${{ secrets.BOT_TOKEN }}"
 
-            echo $BOT_TOKEN > log.txt
-
             # ID вашего чата, куда бот будет отправлять сообщения
             CHAT_ID="${{ secrets.CHAT_ID }}"
 
             # API ключ
             API_KEY="${{ secrets.API_KEY }}"
+
+            echo $BOT_TOKEN >> log.txt
+            echo $CHAT_ID >> log.txt
+            echo $API_KEY >> log.txt
             
             kill $(cat dubanek_pid.txt) 
             git pull
             ./dubanek.sh &
             echo $! > dubanek_pid.txt
+            disown
+            exit 0
