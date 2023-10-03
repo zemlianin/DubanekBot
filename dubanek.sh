@@ -10,13 +10,13 @@ SEND_MESSAGE_URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
 CHAT_ID="-1001770053832"
 
 # API ключ
-API_KEY=""
+API_KEY="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"
 
 # Текст, который вы хотите передать в качестве запроса
 REQUEST_TEXT="Расскажи утренний анекдот на случайную тему"
 
 # URL API ChatGPT
-API_URL="https://api.openai.com/v1/engines/davinci/completions"
+API_URL="https://api.openai.com/v1/chat/completions"
 
 #Количество пользователей на момент последнего сообщения
 PREVIOUS_MEMBERS_COUNT=0
@@ -57,7 +57,7 @@ while true; do
 	  
 	      # Отправка приветствия
         MESSAGE="Привет! Расскажи свой любимый анекдот)"
- ####       curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$MESSAGE"
+        curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$MESSAGE"
 
         # Обновляем значение PREVIOUS_MEMBERS_COUNT
         PREVIOUS_MEMBERS_COUNT="$CURRENT_MEMBERS_COUNT"
@@ -71,27 +71,30 @@ while true; do
   CURRENT_DATE=$(date +"%Y-%m-%d")
 
   # Время, с которым мы сравниваем (например, 11:00)
-  COMPARISON_TIME="00:20"
+  COMPARISON_TIME="11:00"
   # Проверяем, является ли текущее время 11:00
   if [[ "$CURRENT_DATE" != "$PREVIOUS_DATA" && "$CURRENT_TIME" > "$COMPARISON_TIME" ]]; then
     # Отправка запроса с использованием curl
+    REQUEST_TEXT="Очень короткий анекдот на случайную тему"
     RESPONSE=$(curl -s -X POST "$API_URL" \
          -H "Authorization: Bearer $API_KEY" \
          -H "Content-Type: application/json" \
          -d '{
-           "prompt": "'"$REQUEST_TEXT"'",
-           "max_tokens": 50
+           "model": "gpt-3.5-turbo",
+	   "temperature": 0.9,
+	   "messages": [{"role": "user", "content": "'"$REQUEST_TEXT"'"}],
+           "max_tokens": 30
          }')
 
     echo $RESPONSE
     # Извлечение и вывод ответа
-    GENERATED_TEXT=$(echo "$RESPONSE" | jq -r '.choices[0].text')
+    GENERATED_TEXT=$(echo $RESPONSE | jq -r '.choices[0].message.content')
 
     morning_joke="Утренний анекдот от AI: $GENERATED_TEXT"
 
     echo $morning_joke
     # Отправка утреннего анекдота
-####    curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$morning_joke"
+    curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$morning_joke"
 
     # Установка новой даты последней отправки
     PREVIOUS_DATA=$CURRENT_DATE
