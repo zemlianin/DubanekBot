@@ -19,6 +19,8 @@ jobs:
             cd DubanekBot
             BOT_TOKEN="${{ secrets.BOT_TOKEN }}"
 
+            echo BOT_TOKEN
+
             # ID вашего чата, куда бот будет отправлять сообщения
             CHAT_ID="${{ secrets.CHAT_ID }}"
 
