@@ -18,103 +18,90 @@ REQUEST_TEXT="Расскажи утренний анекдот на случай
 # URL API ChatGPT
 API_URL="https://api.openai.com/v1/chat/completions"
 
-#Количество пользователей на момент последнего сообщения
-PREVIOUS_MEMBERS_COUNT=0
+# Функция отправки сообщения в чат
+send_message() {
+  local message="$1"
+ ### curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$message"
+}
 
-PREVIOUS_DATA=""
+# Функция выполнения запроса к API ChatGPT
+generate_gpt_response() {
+  local request_text="$1"
+  local response=$(curl -s -X POST "$API_URL" \
+    -H "Authorization: Bearer $API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+       "model": "gpt-3.5-turbo",
+       "temperature": 0.9,
+       "messages": [{"role": "user", "content": "'"$request_text"'"}],
+       "max_tokens": 35
+     }')
+  local generated_text=$(echo "$response" | jq -r '.choices[0].message.content')
+  echo "$generated_text"
+}
 
-# Инициализация переменной для хранения текста последнего сообщения
-LAST_MESSAGE_TEXT=""
-
-# Получение обновлений чата с использованием long polling
-while true; do
-
-  echo start
-
-  # Запрос на получение обновлений
-  UPDATES=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates")
-
-  # Извлечение текста последнего сообщения (если оно есть)
-  LAST_MESSAGE_TEXT=$(echo "$UPDATES" | jq -r '.result[-1].message.text')
-
-  echo checking
-
-  # Проверка наличия новых сообщений и их текста
-  if [[ "$UPDATES" != '{"ok":true,"result":[]}' && -n "$LAST_MESSAGE_TEXT" ]]; then
-
-    echo $LAST_MESSAGE_TEXT
-
-	# Отправляем запрос к API Telegram для получения информации о количестве участников 
-    CURRENT_MEMBERS_COUNT=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getChatMembersCount?chat_id=$CHAT_ID" | jq -r '.result')
-
-	  echo $CURRENT_MEMBERS_COUNT
-
-	  if [ "$CURRENT_MEMBERS_COUNT" -gt "$PREVIOUS_MEMBERS_COUNT" ]; then
-
-        # Если количество участников увеличилось, то кто-то новый присоединился
-        NEW_MEMBERS_COUNT=$((CURRENT_MEMBERS_COUNT - PREVIOUS_MEMBERS_COUNT))
-        echo "$NEW_MEMBERS_COUNT new members joined the chat"
-	  
-	      # Отправка приветствия
-        MESSAGE="Привет! Расскажи свой любимый анекдот)"
-        curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$MESSAGE"
-
-        # Обновляем значение PREVIOUS_MEMBERS_COUNT
-        PREVIOUS_MEMBERS_COUNT="$CURRENT_MEMBERS_COUNT"
-    fi
-
-	  PREVIOUS_MEMBERS_COUNT=$CURRENT_MEMBERS_COUNT
+# Функция для обработки новых участников чата
+handle_new_members() {
+  local current_members_count="$1"
+  if [[ "$current_members_count" != "0" && "$current_members_count" > "$PREVIOUS_MEMBERS_COUNT" ]]; then
+    local new_members_count=$((current_members_count - PREVIOUS_MEMBERS_COUNT))
+    local message="Привет! Расскажи свой любимый анекдот)"
+    send_message "$message"
+    PREVIOUS_MEMBERS_COUNT="$current_members_count"
   fi
+}
 
+# Функция для отправки утреннего анекдота
+send_morning_joke() {
+  local generated_text="$1"
+  local morning_joke="Утренний анекдот от AI: $generated_text"
+  send_message "$morning_joke"
+}
+
+# Основной цикл для получения обновлений чата
+while true; do
+  echo "start"
+  
+  # Запрос на получение обновлений
+  updates=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates")
+  
+  # Извлечение текста последнего сообщения (если оно есть)
+  LAST_MESSAGE_TEXT=$(echo "$updates" | jq -r '.result[-1].message.text')
+
+  echo "checking"
+  
+  # Проверка наличия новых сообщений и их текста
+  if [[ "$updates" != '{"ok":true,"result":[]}' && -n "$LAST_MESSAGE_TEXT" ]]; then
+    echo "$LAST_MESSAGE_TEXT"
+  
+    # Отправляем запрос к API Telegram для получения информации о количестве участников 
+    CURRENT_MEMBERS_COUNT=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getChatMembersCount?chat_id=$CHAT_ID" | jq -r '.result')
+  
+    echo "$CURRENT_MEMBERS_COUNT"
+  
+    handle_new_members "$CURRENT_MEMBERS_COUNT"
+    PREVIOUS_MEMBERS_COUNT="$CURRENT_MEMBERS_COUNT"
+  fi
+  
   # Получаем текущее время в формате часы:минуты
   CURRENT_TIME=$(date "+%H:%M")
   CURRENT_DATE=$(date +"%Y-%m-%d")
-
+  
   # Время, с которым мы сравниваем (например, 11:00)
   COMPARISON_TIME="11:00"
+  
   # Проверяем, является ли текущее время 11:00
   if [[ "$CURRENT_DATE" != "$PREVIOUS_DATA" && "$CURRENT_TIME" > "$COMPARISON_TIME" ]]; then
-    # Отправка запроса с использованием curl
     REQUEST_TEXT="Очень короткий анекдот на случайную тему на 10 слов"
-    RESPONSE=$(curl -s -X POST "$API_URL" \
-         -H "Authorization: Bearer $API_KEY" \
-         -H "Content-Type: application/json" \
-         -d '{
-           "model": "gpt-3.5-turbo",
-	   "temperature": 0.9,
-	   "messages": [{"role": "user", "content": "'"$REQUEST_TEXT"'"}],
-           "max_tokens": 35
-         }')
-
-    echo $RESPONSE
-    # Извлечение и вывод ответа
-    GENERATED_TEXT=$(echo $RESPONSE | jq -r '.choices[0].message.content')
-
-    morning_joke="Утренний анекдот от AI: $GENERATED_TEXT"
-
-    echo $morning_joke
-    # Отправка утреннего анекдота
-    curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$morning_joke"
-
+    GENERATED_TEXT=$(generate_gpt_response "$REQUEST_TEXT")
+    echo "$GENERATED_TEXT"
+  
+    send_morning_joke "$GENERATED_TEXT"
+  
     # Установка новой даты последней отправки
-    PREVIOUS_DATA=$CURRENT_DATE
+    PREVIOUS_DATA="$CURRENT_DATE"
   fi
-
+  
   # Пауза между проверками
   sleep 5
 done
-
-
-
-# Если текст последнего сообщения содержит оповещение о добавлении нового участника
-# if [[ "$LAST_MESSAGE_TEXT" == *"new_chat_participant"* ]]; then
-
-#  echo it is new participant
-
-#   # Отправка приветственного сообщения
-#   MESSAGE="Hello! Tell your favorite joke"
-#   curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$MESSAGE"
-
-#   # Очистка обновлений
-#   curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates" > /dev/null
-# fi
