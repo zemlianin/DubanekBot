@@ -18,10 +18,13 @@ REQUEST_TEXT="Расскажи утренний анекдот на случай
 # URL API ChatGPT
 API_URL="https://api.openai.com/v1/chat/completions"
 
+#Начальное число пользователей
+PREVIOUS_MEMBERS_COUNT="0"
+
 # Функция отправки сообщения в чат
 send_message() {
   local message="$1"
- ### curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$message"
+  curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$message"
 }
 
 # Функция выполнения запроса к API ChatGPT
@@ -36,6 +39,7 @@ generate_gpt_response() {
        "messages": [{"role": "user", "content": "'"$request_text"'"}],
        "max_tokens": 35
      }')
+  echo $response
   local generated_text=$(echo "$response" | jq -r '.choices[0].message.content')
   echo "$generated_text"
 }
@@ -43,10 +47,11 @@ generate_gpt_response() {
 # Функция для обработки новых участников чата
 handle_new_members() {
   local current_members_count="$1"
-  if [[ "$current_members_count" != "0" && "$current_members_count" > "$PREVIOUS_MEMBERS_COUNT" ]]; then
+  if [[ "$PREVIOUS_MEMBERS_COUNT" != "0" && "$current_members_count" > "$PREVIOUS_MEMBERS_COUNT" ]]; then
     local new_members_count=$((current_members_count - PREVIOUS_MEMBERS_COUNT))
     local message="Привет! Расскажи свой любимый анекдот)"
-    send_message "$message"
+###    send_message "$message"
+    echo "new member"
     PREVIOUS_MEMBERS_COUNT="$current_members_count"
   fi
 }
@@ -55,7 +60,7 @@ handle_new_members() {
 send_morning_joke() {
   local generated_text="$1"
   local morning_joke="Утренний анекдот от AI: $generated_text"
-  send_message "$morning_joke"
+###  send_message "$morning_joke"
 }
 
 # Основной цикл для получения обновлений чата
