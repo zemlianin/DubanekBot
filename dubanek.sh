@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Установите токен вашего бота
-BOT_TOKEN="6427718017:j_iG7b1FiHTzjpwAu-k9xKhM"
+BOT_TOKEN="6427718017:j_iG7b1FiHTzjpwAu-k9xKhMXXX"
 
 # Задайте URL для отправки сообщений в чат
 SEND_MESSAGE_URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
