@@ -85,11 +85,11 @@ while true; do
     PREVIOUS_MEMBERS_COUNT="$CURRENT_MEMBERS_COUNT"
   fi
   # Получаем текущее время в формате часы:минуты
-  CURRENT_TIME=$(date "+%H:%M")
+  CURRENT_TIME=$(date +"%H:%M")
   CURRENT_DATE=$(date +"%Y-%m-%d")
 
   # Время, с которым мы сравниваем (например, 11:00)
-  COMPARISON_TIME="11:00"
+  COMPARISON_TIME="1:00"
 
   # Проверяем, является ли текущее время 11:00
   if [[ "$CURRENT_DATE" != "$PREVIOUS_DATA" && "$CURRENT_TIME" > "$COMPARISON_TIME" ]]; then
