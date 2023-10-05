@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# BOT_TOKEN устонавливается внутри CI
+# BOT_TOKEN="" #устанавливается внутри CI
 
 # Задайте URL для отправки сообщений в чат
 SEND_MESSAGE_URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
 
 # ID вашего чата, куда бот будет отправлять сообщения
-# CHAT_ID устонавливается внутри CI
+# CHAT_ID устанавливается внутри CI
 
 # API ключ
-# API_KEY устонавливается внутри CI
+# API_KEY="" #устанавливается внутри CI
 
 # Текст, который вы хотите передать в качестве запроса
 REQUEST_TEXT="Расскажи утренний анекдот на случайную тему"
@@ -85,17 +85,19 @@ while true; do
     PREVIOUS_MEMBERS_COUNT="$CURRENT_MEMBERS_COUNT"
   fi
   # Получаем текущее время в формате часы:минуты
-  CURRENT_TIME=$(date +"%H:%M")
-  CURRENT_DATE=$(date +"%Y-%m-%d")
+  CURRENT_TIME_H=$(date "+%H")
+  CURRENT_DATE=$(date "+%Y-%m-%d")
 
   # Время, с которым мы сравниваем (например, 11:00)
-  COMPARISON_TIME="1:00"
-
+  COMPARISON_TIME_H="9"
+  COMPARISON_TIME_M="0"
+  echo $CURRENT_TIME_H
+  echo 
   # Проверяем, является ли текущее время 11:00
-  if [[ "$CURRENT_DATE" != "$PREVIOUS_DATA" && "$CURRENT_TIME" > "$COMPARISON_TIME" ]]; then
+  if [[ "$CURRENT_DATE" != "$PREVIOUS_DATA" && "$CURRENT_TIME_H" -gt "$COMPARISON_TIME_H" ]]; then
     REQUEST_TEXT="Очень короткий анекдот на случайную тему на 10 слов"
     GENERATED_TEXT=$(generate_gpt_response "$REQUEST_TEXT")
-
+    echo $GENERATED_TEXT
     send_morning_joke "$GENERATED_TEXT"
 
     # Установка новой даты последней отправки
