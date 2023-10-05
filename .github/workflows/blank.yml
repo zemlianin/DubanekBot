@@ -17,13 +17,13 @@ jobs:
           password: ${{ secrets.SSH_KEY }}
           script: |
             cd DubanekBot
-            BOT_TOKEN="${{ secrets.BOT_TOKEN }}"
+            export BOT_TOKEN="${{ secrets.BOT_TOKEN }}"
 
             # ID вашего чата, куда бот будет отправлять сообщения
-            CHAT_ID="${{ secrets.CHAT_ID }}"
+            export CHAT_ID="${{ secrets.CHAT_ID }}"
 
             # API ключ
-            API_KEY="${{ secrets.API_KEY }}"
+            export API_KEY="${{ secrets.API_KEY }}"
             
             kill $(cat dubanek_pid.txt) 
             git pull
