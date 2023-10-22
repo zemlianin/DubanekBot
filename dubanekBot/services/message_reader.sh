@@ -22,13 +22,16 @@ while true; do
   LAST_MESSAGE_TIMESTAMP=$(echo "$updates" | jq -r '.result[-1].message.date')
   LAST_UPDATE_ID=$(echo "$updates" | jq -r '.result[-1].update_id')
 
+  LAST_MESSAGE_TEXT_DECODED=$(echo -e "$LAST_MESSAGE_TEXT")
+  echo $LAST_MESSAGE_TEXT_DECODED
+
   offset=$((LAST_UPDATE_ID+1))
 
-  if [[ LAST_MESSAGE_TEXT == *"\""* ]]; then
+  if [[ $LAST_MESSAGE_TEXT_DECODED == *"\""* ]]; then
     echo "SQL Инъекция!"
   else
-    SQL_QUERY="INSERT INTO messages_for_read (timestamp, data, update_id) VALUES (FROM_UNIXTIME($LAST_MESSAGE_TIMESTAMP), \"$LAST_MESSAGE_TEXT\", $LAST_UPDATE_ID);"
-    mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -D $DB_NAME -e "$SQL_QUERY"
+    SQL_QUERY="INSERT INTO messages_for_read (timestamp, data, update_id) VALUES (FROM_UNIXTIME($LAST_MESSAGE_TIMESTAMP), \"$LAST_MESSAGE_TEXT_DECODED\", $LAST_UPDATE_ID);"
+    mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -D $DB_NAME --default-character-set=utf8 -s -e "$SQL_QUERY"
   fi
 
   sleep 5

@@ -3,7 +3,7 @@
 # BOT_TOKEN="" #устанавливается внутри CI
 
 # Задайте URL для отправки сообщений в чат
-SEND_MESSAGE_URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
+# SEND_MESSAGE_URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
 
 # ID вашего чата, куда бот будет отправлять сообщения
 # CHAT_ID устанавливается внутри CI
@@ -23,9 +23,13 @@ PREVIOUS_MEMBERS_COUNT="0"
 ROOT_PATH="/var/dubanek"
 # Функция отправки сообщения в чат
 send_message() {
+  send_message_url="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
+
   local message="$1"
-  # curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$message"
+  echo "$send_message_url" -d "chat_id=$CHAT_ID" -d "text=$message"
+  curl -s -X POST "$send_message_url" -d "chat_id=$CHAT_ID" -d "text=$message"
 }
+export -f send_message
 
 # Функция выполнения запроса к API ChatGPT
 generate_gpt_response() {
@@ -49,7 +53,7 @@ handle_new_members() {
   if [[ "$PREVIOUS_MEMBERS_COUNT" != "0" && "$current_members_count" > "$PREVIOUS_MEMBERS_COUNT" ]]; then
     local new_members_count=$((current_members_count - PREVIOUS_MEMBERS_COUNT))
     local message="Привет! Расскажи свой любимый анекдот)"
-    send_message "$message"
+    # send_message "$message"
     PREVIOUS_MEMBERS_COUNT="$current_members_count"
   fi
 }
@@ -58,7 +62,7 @@ handle_new_members() {
 send_morning_joke() {
   local generated_text="$1"
   local morning_joke="Утренний анекдот от AI: $generated_text"
-  send_message "$morning_joke"
+  # send_message "$morning_joke"
 }
 
 bash $ROOT_PATH/services/message_reader.sh &

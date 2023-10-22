@@ -8,9 +8,7 @@ CREATE TABLE stage.producers (
 	is_deleted BOOL DEFAULT 0 NOT NULL,
     PRIMARY KEY (id)
 )
-ENGINE=InnoDB
-DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci;
+ENGINE=InnoDB;
 
 
 CREATE TABLE stage.messages_for_send (
@@ -22,10 +20,7 @@ CREATE TABLE stage.messages_for_send (
     PRIMARY KEY (id),
     FOREIGN KEY (producer_id) REFERENCES producers(id)
 )
-ENGINE=InnoDB
-DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci;
-
+ENGINE=InnoDB;
 
 CREATE TABLE stage.messages_for_read (
 	id INT auto_increment NOT NULL,
@@ -35,6 +30,4 @@ CREATE TABLE stage.messages_for_read (
     PRIMARY KEY (id),
     UNIQUE (update_id)
 )
-ENGINE=InnoDB
-DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci;
+ENGINE=InnoDB;
