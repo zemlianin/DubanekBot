@@ -20,10 +20,11 @@ API_URL="https://api.openai.com/v1/chat/completions"
 #Начальное число пользователей
 PREVIOUS_MEMBERS_COUNT="0"
 
+ROOT_PATH="/var/dubanek"
 # Функция отправки сообщения в чат
 send_message() {
   local message="$1"
-  curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$message"
+  # curl -s -X POST "$SEND_MESSAGE_URL" -d "chat_id=$CHAT_ID" -d "text=$message"
 }
 
 # Функция выполнения запроса к API ChatGPT
@@ -60,15 +61,20 @@ send_morning_joke() {
   send_message "$morning_joke"
 }
 
+bash $ROOT_PATH/services/message_reader.sh &
+
 # Основной цикл для получения обновлений чата
 while true; do
-  echo "start"
+  echo "start 1"
 
   # Запрос на получение обновлений
   updates=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates")
 
   # Извлечение текста последнего сообщения (если оно есть)
   LAST_MESSAGE_TEXT=$(echo "$updates" | jq -r '.result[-1].message.text')
+
+  LAST_MESSAGE_TIMESTAMP=$(echo "$updates" | jq -r '.result[-1].message.date')
+
 
   echo "checking"
 
@@ -84,6 +90,7 @@ while true; do
     handle_new_members "$CURRENT_MEMBERS_COUNT"
     PREVIOUS_MEMBERS_COUNT="$CURRENT_MEMBERS_COUNT"
   fi
+  
   # Получаем текущее время в формате часы:минуты
   CURRENT_TIME_H=$(date "+%H")
   CURRENT_DATE=$(date "+%Y-%m-%d")
