@@ -62,6 +62,7 @@ send_morning_joke() {
 }
 
 bash $ROOT_PATH/services/message_reader.sh &
+bash $ROOT_PATH/services/message_sender.sh &
 
 # Основной цикл для получения обновлений чата
 while true; do

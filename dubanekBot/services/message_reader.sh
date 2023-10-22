@@ -16,7 +16,7 @@ while true; do
   updates=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates?offset=$offset")
   echo $updates
   echo $offset
-  
+
   # Извлечение информации из последнего сообщения (если оно есть)
   LAST_MESSAGE_TEXT=$(echo "$updates" | jq -r '.result[-1].message.text')
   LAST_MESSAGE_TIMESTAMP=$(echo "$updates" | jq -r '.result[-1].message.date')
@@ -31,5 +31,5 @@ while true; do
     mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -D $DB_NAME -e "$SQL_QUERY"
   fi
 
-  sleep 3
+  sleep 5
 done

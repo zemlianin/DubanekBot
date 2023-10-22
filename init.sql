@@ -17,6 +17,7 @@ CREATE TABLE stage.messages_for_send (
 	id INT auto_increment NOT NULL,
 	`timestamp` TIMESTAMP NOT NULL,
 	`data` LONGTEXT NOT NULL,
+    is_sent BOOL DEFAULT 0 NOT NULL,
 	producer_id INT NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (producer_id) REFERENCES producers(id)

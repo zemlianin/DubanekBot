@@ -8,6 +8,7 @@ services:
       MYSQL_DATABASE: stage
       MYSQL_USER: example
       MYSQL_PASSWORD: secret2
+      MYSQL_ROOT_HOST: "%"
     ports:
       - "3306:3306"
     volumes:
