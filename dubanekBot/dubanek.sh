@@ -21,17 +21,45 @@ API_URL="https://api.openai.com/v1/chat/completions"
 PREVIOUS_MEMBERS_COUNT="0"
 
 ROOT_PATH="/var/dubanek"
-# Функция отправки сообщения в чат
-send_message() {
-  send_message_url="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
 
+
+# Функция API отправки сообщения в чат
+add_message() {
   local message="$1"
-  echo "$send_message_url" -d "chat_id=$CHAT_ID" -d "text=$message"
-  curl -s -X POST "$send_message_url" -d "chat_id=$CHAT_ID" -d "text=$message"
+  local path="$0"
+  
+  current_timestamp=$(date +%s)
+  
+  if [[ $message == *"\""* ]]; then
+    echo "SQL Инъекция!"
+  else
+    SQL_QUERY="INSERT INTO messages_for_send (timestamp, data, path) VALUES ($current_timestamp, \"$message\", \"$path\");"
+    mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -D $DB_NAME --default-character-set=utf8 -s -e "$SQL_QUERY"
+  fi
 }
-export -f send_message
+export -f add_message
 
-# Функция выполнения запроса к API ChatGPT
+# Функция API получения списка сообщений начиная с какого то timestamp
+get_messages() {
+  local timestamp="$1"
+  
+  QUERY="SELECT * FROM messages_for_read WHERE timestamp > $timestamp"
+
+  mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" -s -e "$QUERY" | while IFS=$'\t' read -r id timestamp data update_id; do
+    echo "$id;$timestamp;$data;$update_id"
+  done
+}
+export -f get_messages
+
+# Функция API получения участников чата
+get_members() {
+  # Отправляем запрос к API Telegram для получения информации о количестве участников
+  CURRENT_MEMBERS_COUNT=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getChatMembersCount?chat_id=$CHAT_ID" | jq -r '.result')
+  echo $CURRENT_MEMBERS_COUNT
+}
+export -f get_members
+
+# Функция API выполнения запроса к API ChatGPT
 generate_gpt_response() {
   local request_text="$1"
   local response=$(curl -s -X POST "$API_URL" \
@@ -46,6 +74,10 @@ generate_gpt_response() {
   local generated_text=$(echo "$response" | jq -r '.choices[0].message.content')
   echo "$generated_text"
 }
+export -f generate_gpt_response
+
+
+
 
 # Функция для обработки новых участников чата
 handle_new_members() {
@@ -53,7 +85,7 @@ handle_new_members() {
   if [[ "$PREVIOUS_MEMBERS_COUNT" != "0" && "$current_members_count" > "$PREVIOUS_MEMBERS_COUNT" ]]; then
     local new_members_count=$((current_members_count - PREVIOUS_MEMBERS_COUNT))
     local message="Привет! Расскажи свой любимый анекдот)"
-    # send_message "$message"
+    add_message "$message"
     PREVIOUS_MEMBERS_COUNT="$current_members_count"
   fi
 }
@@ -65,6 +97,7 @@ send_morning_joke() {
   # send_message "$morning_joke"
 }
 
+# Запуск сервисов бота
 bash $ROOT_PATH/services/message_reader.sh &
 bash $ROOT_PATH/services/message_sender.sh &
 
@@ -72,6 +105,8 @@ bash $ROOT_PATH/services/message_sender.sh &
 while true; do
   echo "start 1"
 
+  add_message ping
+  sleep 5
   # Запрос на получение обновлений
   updates=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates")
 
