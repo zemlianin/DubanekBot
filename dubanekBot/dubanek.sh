@@ -20,7 +20,7 @@ API_URL="https://api.openai.com/v1/chat/completions"
 #Начальное число пользователей
 PREVIOUS_MEMBERS_COUNT="0"
 
-ROOT_PATH="/var/dubanek"
+export ROOT_PATH="/var/dubanek"
 
 
 # Функция API отправки сообщения в чат
@@ -77,19 +77,6 @@ generate_gpt_response() {
 export -f generate_gpt_response
 
 
-
-
-# Функция для обработки новых участников чата
-handle_new_members() {
-  local current_members_count="$1"
-  if [[ "$PREVIOUS_MEMBERS_COUNT" != "0" && "$current_members_count" > "$PREVIOUS_MEMBERS_COUNT" ]]; then
-    local new_members_count=$((current_members_count - PREVIOUS_MEMBERS_COUNT))
-    local message="Привет! Расскажи свой любимый анекдот)"
-    add_message "$message"
-    PREVIOUS_MEMBERS_COUNT="$current_members_count"
-  fi
-}
-
 # Функция для отправки утреннего анекдота
 send_morning_joke() {
   local generated_text="$1"
@@ -100,12 +87,14 @@ send_morning_joke() {
 # Запуск сервисов бота
 bash $ROOT_PATH/services/message_reader.sh &
 bash $ROOT_PATH/services/message_sender.sh &
+bash $ROOT_PATH/services/modules_runner.sh &
+
 
 # Основной цикл для получения обновлений чата
 while true; do
   echo "start 1"
 
-  add_message ping
+  #add_message ping
   sleep 5
   # Запрос на получение обновлений
   updates=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates")
