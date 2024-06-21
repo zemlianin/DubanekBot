@@ -48,7 +48,7 @@ handle_new_members() {
   if [[ "$PREVIOUS_MEMBERS_COUNT" != "0" && "$current_members_count" > "$PREVIOUS_MEMBERS_COUNT" ]]; then
     local new_members_count=$((current_members_count - PREVIOUS_MEMBERS_COUNT))
     local message="Привет! Расскажи свой любимый анекдот)"
-    send_message "$message"
+#    send_message "$message"
     PREVIOUS_MEMBERS_COUNT="$current_members_count"
   fi
 }
